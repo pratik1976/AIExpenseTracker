@@ -1,0 +1,28 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="16" fill="#55D399"/>
+
+  <!-- Receipt -->
+  <path
+    d="M18 11h28v42l-5-4-5 4-5-4-5 4-5-4-5 4V11z"
+    fill="#07100D"
+  />
+
+  <!-- Receipt lines -->
+  <path
+    d="M24 21h16M24 28h16M24 35h10"
+    stroke="#55D399"
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+
+  <!-- Rupee symbol -->
+  <text
+    x="31"
+    y="46"
+    text-anchor="middle"
+    font-size="13"
+    font-family="Arial, sans-serif"
+    font-weight="700"
+    fill="#55D399"
+  >₹</text>
+</svg>
