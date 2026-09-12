@@ -14,17 +14,31 @@ const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
   .split(",")
   .map((s) => s.trim());
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
     callback(new Error("CORS origin not allowed"));
   },
-}));
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+
+// Explicitly handle browser preflight requests
+app.options(/.*/, cors(corsOptions));
 
 app.use(express.json({ limit: "25mb" }));
 
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", service: "AI Expense Tracker API" });
+  res.json({
+    status: "ok",
+    service: "AI Expense Tracker API",
+  });
 });
 
 app.use("/api/auth", authRoutes);
