@@ -73,10 +73,11 @@ Use the final amount charged on the receipt as total. If the receipt is unreadab
 
   return parseJsonContent(data.choices[0].message.content);
 };
-
 exports.generateInsights = async (expenses) => {
   if (!expenses.length) {
-    return { summary: "Add some expenses to receive AI spending insights." };
+    return {
+      summary: "Add some expenses to receive AI spending insights.",
+    };
   }
 
   const compact = expenses.map((e) => ({
@@ -87,30 +88,68 @@ exports.generateInsights = async (expenses) => {
   }));
 
   const data = await groqRequest({
-    model: MODEL,
-    temperature: 0.4,
-    max_completion_tokens: 800,
+    model: "openai/gpt-oss-20b",
+    temperature: 0.3,
+    max_completion_tokens: 500,
     reasoning_format: "hidden",
-    response_format: { type: "json_object" },
+
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "spending_insights",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: {
+            summary: {
+              type: "string",
+            },
+            topCategory: {
+              type: "string",
+            },
+            savingTip: {
+              type: "string",
+            },
+            observation: {
+              type: "string",
+            },
+          },
+          required: [
+            "summary",
+            "topCategory",
+            "savingTip",
+            "observation",
+          ],
+          additionalProperties: false,
+        },
+      },
+    },
+
     messages: [
       {
-        role: "system",
-        content: "You are a practical personal finance assistant. Give concise, non-financial-advisory spending observations based only on supplied expense data.",
-      },
-      {
         role: "user",
-        content: `Analyze these expenses and return JSON:
-{
-  "summary": "2-3 sentence summary",
-  "topCategory": "category",
-  "savingTip": "one practical suggestion",
-  "observation": "one useful observation"
-}
+        content: `Analyze the following personal expense data.
+
+Provide:
+- A concise 2-3 sentence spending summary.
+- The category with the highest spending.
+- One practical way to save money.
+- One useful observation about the spending pattern.
+
+Return only the requested JSON structure.
+
 Expenses:
 ${JSON.stringify(compact)}`,
       },
     ],
   });
 
-  return parseJsonContent(data.choices[0].message.content);
+  return data.choices[0].message.content
+    ? JSON.parse(data.choices[0].message.content)
+    : {
+        summary: "Unable to generate spending insights.",
+        topCategory: "other",
+        savingTip: "Review your largest spending categories.",
+        observation: "Add more expenses for better insights.",
+      };
 };
